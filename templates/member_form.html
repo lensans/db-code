@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% from "_member_picker.html" import member_picker %}
+{% block title %}成员维护{% endblock %}
+{% block content %}
+<div class="panel" style="max-width: 760px;">
+    <h1>{% if member %}编辑成员{% else %}新增成员{% endif %}</h1>
+    <form method="post" class="grid">
+        <label>姓名
+            <input type="text" name="name" value="{{ member.name if member else '' }}" required>
+        </label>
+        <label>性别
+            <select name="gender" required>
+                <option value="M" {% if member and member.gender == "M" %}selected{% endif %}>男</option>
+                <option value="F" {% if member and member.gender == "F" %}selected{% endif %}>女</option>
+            </select>
+        </label>
+        <label>出生年
+            <input type="number" name="birth_year" value="{{ member.birth_year if member else '' }}" required>
+        </label>
+        <label>逝世年
+            <input type="number" name="death_year" value="{{ member.death_year if member and member.death_year else '' }}">
+        </label>
+        <label>代际编号
+            <input type="number" name="generation_no" value="{{ member.generation_no if member else 1 }}" min="1" required>
+        </label>
+        <label>生平简介
+            <textarea name="biography" rows="5">{{ member.biography if member else '' }}</textarea>
+        </label>
+
+        {% if not member %}
+        <div class="panel" style="margin: 0;">
+            <h3>创建时直接挂关系</h3>
+            <p class="muted">输入姓名即可搜索成员，候选默认按成员创建顺序排列。</p>
+            <div class="grid grid-2">
+                {{ member_picker("father_id", "父亲", genealogy_id) }}
+                {{ member_picker("mother_id", "母亲", genealogy_id) }}
+                {{ member_picker("spouse_id", "配偶", genealogy_id) }}
+                <label>结婚年份
+                    <input type="number" name="married_year">
+                </label>
+            </div>
+        </div>
+        {% endif %}
+
+        <button type="submit">保存</button>
+    </form>
+</div>
+{% endblock %}

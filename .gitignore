@@ -1,0 +1,50 @@
+# Python cache and local tooling
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Local runtime state
+instance/
+*.db
+*.sqlite
+*.sqlite3
+*.log
+start_app.out.log
+start_app.err.log
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# Temporary extraction/build artifacts
+.ppt_extract/
+tmp_ppt.zip
+*.tmp
+*.bak
+
+# Local reference materials, not part of the shared project source
+示例文档*.md
+第06章 数据库应用实践.pptx
+
+# Office lock files
+~$*
+
+# OS/editor noise
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Local ad-hoc generated data that is not part of the deliverable
+交付物/data/generated_test/
+交付物/data/generated_test2/

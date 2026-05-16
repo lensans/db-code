@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% from "_member_picker.html" import member_picker %}
+{% block title %}祖先查询{% endblock %}
+{% block content %}
+<div class="panel">
+    <h1>{{ genealogy.title }} - 祖先查询</h1>
+    <form method="get" class="inline-form">
+        {{ member_picker("member_id", "成员", genealogy.genealogy_id, member_id, member_name, required=True) }}
+        <div></div>
+        <button type="submit">查询</button>
+    </form>
+</div>
+
+<div class="panel">
+    <table>
+        <thead>
+            <tr>
+                <th>祖先 ID</th>
+                <th>姓名</th>
+                <th>性别</th>
+                <th>出生年</th>
+                <th>逝世年</th>
+                <th>层级深度</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in results %}
+            <tr>
+                <td>{{ row.parent_id }}</td>
+                <td>{{ row.name }}</td>
+                <td>{{ row.gender }}</td>
+                <td>{{ row.birth_year }}</td>
+                <td>{{ row.death_year or "在世/未知" }}</td>
+                <td>{{ row.depth }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="6" class="muted">暂无结果。</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

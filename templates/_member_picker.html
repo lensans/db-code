@@ -1,0 +1,9 @@
+{% macro member_picker(name, label, genealogy_id, selected_id=None, selected_name="", required=False) %}
+<div class="member-picker" data-member-picker data-search-url="{{ url_for('main.member_options', genealogy_id=genealogy_id) }}" data-required="{{ '1' if required else '0' }}">
+    <label>{{ label }}
+        <input type="text" class="member-picker-input" value="{{ selected_name or '' }}" autocomplete="off" placeholder="输入姓名搜索">
+        <input type="hidden" class="member-picker-value" name="{{ name }}" value="{{ selected_id or '' }}">
+    </label>
+    <div class="member-picker-menu" role="listbox"></div>
+</div>
+{% endmacro %}

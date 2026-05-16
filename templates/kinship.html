@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% from "_member_picker.html" import member_picker %}
+{% block title %}亲缘路径查询{% endblock %}
+{% block content %}
+<div class="panel">
+    <h1>{{ genealogy.title }} - 亲缘路径查询</h1>
+    <form method="get" class="grid">
+        <div class="grid grid-2">
+            {{ member_picker("start_id", "起点成员", genealogy.genealogy_id, start_id, start_name, required=True) }}
+            {{ member_picker("end_id", "终点成员", genealogy.genealogy_id, end_id, end_name, required=True) }}
+        </div>
+        <button type="submit">查询</button>
+    </form>
+    <p class="muted">输入姓名搜索成员，候选默认按成员创建顺序排列。</p>
+</div>
+
+<div class="panel">
+    {% if path %}
+        <h2>路径结果</h2>
+        <div class="path-steps">
+            {% for step in path %}
+                <div class="path-step">
+                    <div><strong>{{ step.member.name }}</strong>（ID {{ step.member.member_id }}，{{ "男" if step.member.gender == "M" else "女" }}）</div>
+                    {% if step.relation_to_next %}
+                        <div class="muted">与下一位成员的关系：{{ step.relation_to_next }}</div>
+                    {% else %}
+                        <div class="muted">路径终点</div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="muted">未查询到路径，或者尚未输入参数。</p>
+    {% endif %}
+</div>
+{% endblock %}

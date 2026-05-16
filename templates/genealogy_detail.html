@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+{% block title %}{{ genealogy.title }}{% endblock %}
+{% block content %}
+<section class="panel detail-hero">
+    <div>
+        <h1>{{ genealogy.title }}</h1>
+        <div class="detail-meta">
+            <span class="detail-badge">姓氏：{{ genealogy.surname }}</span>
+            <span class="detail-badge">修谱年份：{{ genealogy.revision_year or "未填写" }}</span>
+            <span class="detail-badge">族谱编号：{{ genealogy.genealogy_id }}</span>
+        </div>
+    </div>
+    <a class="button-link" href="{{ url_for('main.tree_preview', genealogy_id=genealogy.genealogy_id) }}">查看树状族谱</a>
+</section>
+
+<div class="stat-strip">
+    <div class="stat-card">
+        <span class="muted">家族总人数</span>
+        <strong>{{ stats.total }}</strong>
+    </div>
+    <div class="stat-card">
+        <span class="muted">男性</span>
+        <strong>{{ stats.male }}</strong>
+        <span class="muted">{{ stats.male_ratio }}%</span>
+    </div>
+    <div class="stat-card">
+        <span class="muted">女性</span>
+        <strong>{{ stats.female }}</strong>
+        <span class="muted">{{ stats.female_ratio }}%</span>
+    </div>
+    <div class="stat-card">
+        <span class="muted">当前页</span>
+        <strong>{{ pagination.page if pagination else 1 }}</strong>
+        <span class="muted">共 {{ pagination.pages if pagination else 1 }} 页</span>
+    </div>
+</div>
+
+<div class="detail-quick">
+    <a class="quick-card" href="{{ url_for('main.create_member', genealogy_id=genealogy.genealogy_id) }}">
+        <strong>新增成员</strong>
+        <span class="muted">录入成员并挂接亲属关系</span>
+    </a>
+    <a class="quick-card" href="{{ url_for('main.create_relation', genealogy_id=genealogy.genealogy_id) }}">
+        <strong>关系维护</strong>
+        <span class="muted">维护亲子、配偶关系</span>
+    </a>
+    <a class="quick-card" href="{{ url_for('main.search_members', genealogy_id=genealogy.genealogy_id) }}">
+        <strong>姓名查询</strong>
+        <span class="muted">按姓名检索成员</span>
+    </a>
+    <a class="quick-card" href="{{ url_for('main.ancestor_query', genealogy_id=genealogy.genealogy_id) }}">
+        <strong>祖先查询</strong>
+        <span class="muted">追溯成员祖先链</span>
+    </a>
+    <a class="quick-card" href="{{ url_for('main.kinship_query', genealogy_id=genealogy.genealogy_id) }}">
+        <strong>亲缘路径</strong>
+        <span class="muted">查询两人关系路径</span>
+    </a>
+</div>
+
+<div class="content-split">
+    <section class="panel table-panel">
+        <div class="table-header">
+            <div>
+                <h2>成员列表</h2>
+                <p class="muted">按成员编号升序分页展示，每页 {{ pagination.per_page if pagination else 50 }} 人。</p>
+                <div class="member-list-summary">
+                    <span class="genealogy-pill">当前 {{ members|length }} 人</span>
+                    <span class="genealogy-pill">共 {{ stats.total }} 人</span>
+                    <span class="genealogy-pill">第 {{ pagination.page if pagination else 1 }} 页</span>
+                </div>
+            </div>
+            <a class="button-link" href="{{ url_for('main.create_member', genealogy_id=genealogy.genealogy_id) }}">新增</a>
+        </div>
+
+        <div class="member-list-toolbar">
+            <span class="muted">成员目录</span>
+            <div class="actions">
+                <a href="{{ url_for('main.search_members', genealogy_id=genealogy.genealogy_id) }}">按姓名查询</a>
+                <a href="{{ url_for('main.create_relation', genealogy_id=genealogy.genealogy_id) }}">维护关系</a>
+            </div>
+        </div>
+
+        <div class="member-directory">
+            {% for member in members %}
+                <article class="member-row">
+                    <div class="member-avatar {% if member.gender == 'F' %}female{% endif %}">
+                        {{ member.name[:1] }}
+                    </div>
+                    <div class="member-main">
+                        <div class="member-name-line">
+                            <strong>{{ member.name }}</strong>
+                            <span class="member-code">#{{ member.member_id }}</span>
+                        </div>
+                        <div class="member-tags">
+                            <span class="member-tag">{{ "男" if member.gender == "M" else "女" }}</span>
+                            <span class="member-tag">第 {{ member.generation_no }} 代</span>
+                            <span class="member-tag">生于 {{ member.birth_year }}</span>
+                            <span class="member-tag">{{ "卒于 " ~ member.death_year if member.death_year else "在世/未知" }}</span>
+                        </div>
+                    </div>
+                    <div class="member-row-actions">
+                        <a class="ghost-link" href="{{ url_for('main.edit_member', member_id=member.member_id) }}">编辑</a>
+                        <form class="inline-delete" method="post" action="{{ url_for('main.delete_member', member_id=member.member_id) }}" onsubmit="return confirm('确认删除该成员吗？');">
+                            <button type="submit" class="danger small-danger">删除</button>
+                        </form>
+                    </div>
+                </article>
+            {% else %}
+                <div class="empty-state">
+                    <p class="muted">暂无成员。</p>
+                    <a class="button-link" href="{{ url_for('main.create_member', genealogy_id=genealogy.genealogy_id) }}">新增第一个成员</a>
+                </div>
+            {% endfor %}
+        </div>
+
+        {% if pagination and pagination.pages > 1 %}
+        <div class="pagination-bar">
+            {% if pagination.has_prev %}
+                <a class="pagination-link" href="{{ url_for('main.genealogy_detail', genealogy_id=genealogy.genealogy_id, page=pagination.prev_num) }}">上一页</a>
+            {% endif %}
+            <span class="pagination-current muted">第 {{ pagination.page }} / {{ pagination.pages }} 页</span>
+            {% if pagination.has_next %}
+                <a class="pagination-link" href="{{ url_for('main.genealogy_detail', genealogy_id=genealogy.genealogy_id, page=pagination.next_num) }}">下一页</a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </section>
+
+    <aside class="panel side-panel">
+        {% if can_manage %}
+            <h2>协作管理</h2>
+            <p class="muted">邀请同学或组员共同维护当前族谱。</p>
+            <form method="post" action="{{ url_for('main.invite_collaborator', genealogy_id=genealogy.genealogy_id) }}" class="grid">
+                <label>用户名
+                    <input type="text" name="username" required>
+                </label>
+                <button type="submit">邀请协作</button>
+            </form>
+            <hr style="border: 0; border-top: 1px solid var(--line); margin: 18px 0;">
+            <form method="post" action="{{ url_for('main.delete_genealogy', genealogy_id=genealogy.genealogy_id) }}" onsubmit="return confirm('确认删除该族谱及其全部成员和关系吗？');">
+                <button type="submit" class="danger">删除族谱</button>
+            </form>
+        {% else %}
+            <h2>协作权限</h2>
+            <p class="muted">你是当前族谱的协作者，可查看与维护成员信息。</p>
+        {% endif %}
+    </aside>
+</div>
+{% endblock %}

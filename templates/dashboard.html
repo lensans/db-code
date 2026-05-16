@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block title %}控制台{% endblock %}
+{% block content %}
+<section class="panel dashboard-hero">
+    <h1>{{ user.username }} 的族谱工作台</h1>
+    <p>集中管理你创建和参与的族谱，快速进入成员维护、关系录入、树状展示和亲缘查询。</p>
+    <div class="hero-actions">
+        <a class="button-link light" href="{{ url_for('main.create_genealogy') }}">创建新族谱</a>
+        {% if owned %}
+            <a class="button-link" href="{{ url_for('main.genealogy_detail', genealogy_id=owned[0].genealogy_id) }}">打开第一个族谱</a>
+        {% endif %}
+    </div>
+</section>
+
+<div class="stat-strip">
+    <div class="stat-card">
+        <span class="muted">可访问族谱</span>
+        <strong>{{ total_genealogies }}</strong>
+    </div>
+    <div class="stat-card">
+        <span class="muted">成员总数</span>
+        <strong>{{ total_members }}</strong>
+    </div>
+    <div class="stat-card">
+        <span class="muted">我创建的</span>
+        <strong>{{ owned|length }}</strong>
+    </div>
+    <div class="stat-card">
+        <span class="muted">协作参与</span>
+        <strong>{{ joined|length }}</strong>
+    </div>
+</div>
+
+<div class="dashboard-section-title">
+    <h2>我创建的族谱</h2>
+    <span class="muted">按创建编号排序</span>
+</div>
+{% if owned %}
+    <div class="genealogy-grid">
+        {% for item in owned %}
+            <article class="genealogy-card">
+                <div>
+                    <h3><a href="{{ url_for('main.genealogy_detail', genealogy_id=item.genealogy_id) }}">{{ item.title }}</a></h3>
+                    <p class="muted">姓氏：{{ item.surname }} · 修谱年份：{{ item.revision_year or "未填写" }}</p>
+                </div>
+                <div class="genealogy-meta">
+                    <span class="genealogy-pill">{{ member_counts.get(item.genealogy_id, 0) }} 位成员</span>
+                    <span class="genealogy-pill">创建者</span>
+                </div>
+                <div class="card-actions">
+                    <a href="{{ url_for('main.genealogy_detail', genealogy_id=item.genealogy_id) }}">进入详情</a>
+                    <a href="{{ url_for('main.tree_preview', genealogy_id=item.genealogy_id) }}">树状展示</a>
+                    <a href="{{ url_for('main.create_relation', genealogy_id=item.genealogy_id) }}">维护关系</a>
+                </div>
+            </article>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="empty-state">
+        <p class="muted">还没有创建族谱。</p>
+        <a class="button-link" href="{{ url_for('main.create_genealogy') }}">立即创建</a>
+    </div>
+{% endif %}
+
+<div class="dashboard-section-title">
+    <h2>我参与的族谱</h2>
+    <span class="muted">协作项目</span>
+</div>
+{% if joined %}
+    <div class="genealogy-grid">
+        {% for item in joined %}
+            <article class="genealogy-card">
+                <div>
+                    <h3><a href="{{ url_for('main.genealogy_detail', genealogy_id=item.genealogy_id) }}">{{ item.title }}</a></h3>
+                    <p class="muted">姓氏：{{ item.surname }} · 修谱年份：{{ item.revision_year or "未填写" }}</p>
+                </div>
+                <div class="genealogy-meta">
+                    <span class="genealogy-pill">{{ member_counts.get(item.genealogy_id, 0) }} 位成员</span>
+                    <span class="genealogy-pill">协作者</span>
+                </div>
+                <div class="card-actions">
+                    <a href="{{ url_for('main.genealogy_detail', genealogy_id=item.genealogy_id) }}">进入详情</a>
+                    <a href="{{ url_for('main.tree_preview', genealogy_id=item.genealogy_id) }}">树状展示</a>
+                </div>
+            </article>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="empty-state">
+        <p class="muted">暂无参与的协作族谱。</p>
+    </div>
+{% endif %}
+{% endblock %}

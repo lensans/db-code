@@ -1,0 +1,56 @@
+SET
+SET
+                                                                       QUERY PLAN                                                                       
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+ Hash Join  (cost=44052.35..46662.36 rows=1 width=16) (actual time=76.203..92.356 rows=17 loops=1)
+   Output: d.depth, m.member_id, m.name
+   Hash Cond: (m.member_id = d.child_id)
+   Buffers: shared hit=4928 read=1235
+   CTE descendants
+     ->  Recursive Union  (cost=1000.00..44051.64 rows=31 width=12) (actual time=0.320..73.122 rows=34 loops=1)
+           Buffers: shared hit=4928
+           ->  Gather  (cost=1000.00..3937.85 rows=1 width=12) (actual time=0.319..40.506 rows=3 loops=1)
+                 Output: parent_child_relations.parent_id, parent_child_relations.child_id, 1
+                 Workers Planned: 1
+                 Workers Launched: 1
+                 Buffers: shared hit=1232
+                 ->  Parallel Seq Scan on public.parent_child_relations  (cost=0.00..2937.75 rows=1 width=12) (actual time=0.006..5.371 rows=2 loops=2)
+                       Output: parent_child_relations.parent_id, parent_child_relations.child_id, 1
+                       Filter: ((parent_child_relations.genealogy_id = 1) AND (parent_child_relations.parent_id = 1))
+                       Rows Removed by Filter: 96658
+                       Buffers: shared hit=1232
+                       Worker 0:  actual time=0.001..0.001 rows=0 loops=1
+           ->  Hash Join  (cost=0.26..4011.32 rows=3 width=12) (actual time=0.422..8.138 rows=8 loops=4)
+                 Output: r.parent_id, r.child_id, (d_1.depth + 1)
+                 Hash Cond: (r.parent_id = d_1.child_id)
+                 Buffers: shared hit=3696
+                 ->  Seq Scan on public.parent_child_relations r  (cost=0.00..3648.47 rows=96678 width=8) (actual time=0.004..7.164 rows=96666 loops=3)
+                       Output: r.relation_id, r.genealogy_id, r.parent_id, r.child_id, r.parent_type
+                       Filter: (r.genealogy_id = 1)
+                       Rows Removed by Filter: 96652
+                       Buffers: shared hit=3696
+                 ->  Hash  (cost=0.22..0.22 rows=3 width=8) (actual time=0.006..0.006 rows=4 loops=4)
+                       Output: d_1.depth, d_1.child_id
+                       Buckets: 1024  Batches: 1  Memory Usage: 9kB
+                       ->  WorkTable Scan on descendants d_1  (cost=0.00..0.22 rows=3 width=8) (actual time=0.002..0.003 rows=4 loops=4)
+                             Output: d_1.depth, d_1.child_id
+                             Filter: (d_1.depth < 4)
+                             Rows Removed by Filter: 4
+   ->  Seq Scan on public.members m  (cost=0.00..2235.00 rows=100000 width=12) (actual time=1.033..14.940 rows=100000 loops=1)
+         Output: m.member_id, m.genealogy_id, m.name, m.gender, m.birth_year, m.death_year, m.biography, m.generation_no
+         Buffers: shared read=1235
+   ->  Hash  (cost=0.70..0.70 rows=1 width=8) (actual time=73.113..73.114 rows=17 loops=1)
+         Output: d.depth, d.child_id
+         Buckets: 1024  Batches: 1  Memory Usage: 9kB
+         Buffers: shared hit=4928
+         ->  CTE Scan on descendants d  (cost=0.00..0.70 rows=1 width=8) (actual time=63.421..73.096 rows=17 loops=1)
+               Output: d.depth, d.child_id
+               Filter: (d.depth = 4)
+               Rows Removed by Filter: 17
+               Buffers: shared hit=4928
+ Planning:
+   Buffers: shared hit=276
+ Planning Time: 3.067 ms
+ Execution Time: 92.544 ms
+(50 rows)
+

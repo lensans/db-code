@@ -1,0 +1,43 @@
+RESET
+RESET
+                                                                                   QUERY PLAN                                                                                   
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Nested Loop  (cost=141.18..149.89 rows=1 width=16) (actual time=2.232..3.186 rows=17 loops=1)
+   Output: d.depth, m.member_id, m.name
+   Inner Unique: true
+   Buffers: shared hit=82 read=25
+   CTE descendants
+     ->  Recursive Union  (cost=0.42..140.88 rows=31 width=12) (actual time=1.376..2.697 rows=34 loops=1)
+           Buffers: shared hit=37 read=19
+           ->  Index Only Scan using uq_parent_child_type on public.parent_child_relations  (cost=0.42..4.44 rows=1 width=12) (actual time=1.374..1.376 rows=3 loops=1)
+                 Output: parent_child_relations.parent_id, parent_child_relations.child_id, 1
+                 Index Cond: ((parent_child_relations.genealogy_id = 1) AND (parent_child_relations.parent_id = 1))
+                 Heap Fetches: 0
+                 Buffers: shared read=4
+           ->  Nested Loop  (cost=0.42..13.58 rows=3 width=12) (actual time=0.011..0.326 rows=8 loops=4)
+                 Output: r.parent_id, r.child_id, (d_1.depth + 1)
+                 Buffers: shared hit=37 read=15
+                 ->  WorkTable Scan on descendants d_1  (cost=0.00..0.22 rows=3 width=8) (actual time=0.000..0.001 rows=4 loops=4)
+                       Output: d_1.parent_id, d_1.child_id, d_1.depth
+                       Filter: (d_1.depth < 4)
+                       Rows Removed by Filter: 4
+                 ->  Index Only Scan using uq_parent_child_type on public.parent_child_relations r  (cost=0.42..4.44 rows=1 width=8) (actual time=0.075..0.076 rows=2 loops=17)
+                       Output: r.genealogy_id, r.parent_id, r.child_id, r.parent_type
+                       Index Cond: ((r.genealogy_id = 1) AND (r.parent_id = d_1.child_id))
+                       Heap Fetches: 0
+                       Buffers: shared hit=37 read=15
+   ->  CTE Scan on descendants d  (cost=0.00..0.70 rows=1 width=8) (actual time=2.095..2.708 rows=17 loops=1)
+         Output: d.parent_id, d.child_id, d.depth
+         Filter: (d.depth = 4)
+         Rows Removed by Filter: 17
+         Buffers: shared hit=37 read=19
+   ->  Index Scan using members_pkey on public.members m  (cost=0.29..8.31 rows=1 width=12) (actual time=0.028..0.028 rows=1 loops=17)
+         Output: m.member_id, m.genealogy_id, m.name, m.gender, m.birth_year, m.death_year, m.biography, m.generation_no
+         Index Cond: (m.member_id = d.child_id)
+         Buffers: shared hit=45 read=6
+ Planning:
+   Buffers: shared hit=276
+ Planning Time: 3.028 ms
+ Execution Time: 3.292 ms
+(37 rows)
+

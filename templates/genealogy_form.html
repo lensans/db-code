@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}新建族谱{% endblock %}
+{% block content %}
+<div class="panel" style="max-width: 640px;">
+    <h1>创建族谱</h1>
+    <form method="post" class="grid">
+        <label>谱名
+            <input type="text" name="title" required>
+        </label>
+        <label>姓氏
+            <input type="text" name="surname" required>
+        </label>
+        <label>修谱年份
+            <input type="number" name="revision_year" min="0">
+        </label>
+        <button type="submit">保存</button>
+    </form>
+</div>
+{% endblock %}

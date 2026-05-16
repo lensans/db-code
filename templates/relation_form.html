@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% from "_member_picker.html" import member_picker %}
+{% block title %}关系维护{% endblock %}
+{% block content %}
+<div class="panel">
+    <h1>{{ genealogy.title }} - 关系维护</h1>
+    <p class="muted">输入姓名搜索成员，候选默认按成员创建顺序排列，不在下拉中展示编号。</p>
+</div>
+
+<div class="grid grid-2">
+    <div class="panel">
+        <h2>新增亲子关系</h2>
+        <form method="post" class="grid">
+            <input type="hidden" name="relation_kind" value="parent_child">
+            {{ member_picker("parent_id", "父母成员", genealogy.genealogy_id, required=True) }}
+            {{ member_picker("child_id", "子女成员", genealogy.genealogy_id, required=True) }}
+            <label>关系类型
+                <select name="parent_type" required>
+                    <option value="father">父系</option>
+                    <option value="mother">母系</option>
+                </select>
+            </label>
+            <button type="submit">保存亲子关系</button>
+        </form>
+    </div>
+
+    <div class="panel">
+        <h2>新增婚姻关系</h2>
+        <form method="post" class="grid">
+            <input type="hidden" name="relation_kind" value="marriage">
+            {{ member_picker("spouse1_id", "配偶 1", genealogy.genealogy_id, required=True) }}
+            {{ member_picker("spouse2_id", "配偶 2", genealogy.genealogy_id, required=True) }}
+            <label>结婚年份
+                <input type="number" name="married_year">
+            </label>
+            <button type="submit">保存婚姻关系</button>
+        </form>
+    </div>
+</div>
+
+<div class="grid grid-2">
+    <div class="panel">
+        <h2>最近亲子关系</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>父母</th>
+                    <th>子女</th>
+                    <th>类型</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in existing_parent_relations %}
+                <tr>
+                    <td>{{ row.relation_id }}</td>
+                    <td>{{ member_map[row.parent_id].name if row.parent_id in member_map else row.parent_id }}</td>
+                    <td>{{ member_map[row.child_id].name if row.child_id in member_map else row.child_id }}</td>
+                    <td>{{ row.parent_type }}</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="4" class="muted">暂无数据。</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="panel">
+        <h2>最近婚姻关系</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>配偶 1</th>
+                    <th>配偶 2</th>
+                    <th>结婚年份</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in existing_marriages %}
+                <tr>
+                    <td>{{ row.marriage_id }}</td>
+                    <td>{{ member_map[row.spouse1_id].name if row.spouse1_id in member_map else row.spouse1_id }}</td>
+                    <td>{{ member_map[row.spouse2_id].name if row.spouse2_id in member_map else row.spouse2_id }}</td>
+                    <td>{{ row.married_year or "未知" }}</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="4" class="muted">暂无数据。</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
